@@ -31,11 +31,12 @@ class PanelApi
         return $client;
     }
 
-    public function register(string $name, string $publicKey, ?string $ipAddress = null): Response
+    public function register(string $name, string $publicKey, string $fingerprint, ?string $ipAddress = null): Response
     {
         return $this->client()->post('/api/servers/register', [
             'name' => $name,
             'public_key' => $publicKey,
+            'fingerprint' => $fingerprint,
             'ip_address' => $ipAddress,
         ]);
     }

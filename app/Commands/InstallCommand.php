@@ -57,7 +57,7 @@ class InstallCommand extends Command
         info("Registering server '{$name}' with panel...");
 
         $response = spin(
-            fn () => $api->register($name, $keyPair['public'], $ipAddress),
+            fn () => $api->register($name, $keyPair['public'], $keyPair['fingerprint'], $ipAddress),
             'Contacting panel...'
         );
 
