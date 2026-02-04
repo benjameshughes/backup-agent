@@ -32,7 +32,8 @@ jobs:
       - name: Build Phar
         run: |
           mkdir -p builds
-          ~/.composer/vendor/bin/box compile -o builds/backup-agent.phar
+          ~/.composer/vendor/bin/box compile
+          mv backup-agent.phar builds/
 
       - name: Build standalone binaries
         run: |
