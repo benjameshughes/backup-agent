@@ -35,16 +35,13 @@ jobs:
           ~/.composer/vendor/bin/box compile
           mv backup-agent.phar builds/
 
-      - name: Build standalone binaries
-        run: |
-          ./vendor/bin/phpacker build linux x64 --src=./builds/backup-agent.phar --php=8.4 --no-interaction
-          ./vendor/bin/phpacker build linux arm64 --src=./builds/backup-agent.phar --php=8.4 --no-interaction
+      - name: Build standalone binary
+        run: ./vendor/bin/phpacker build linux x64 --src=./builds/backup-agent.phar --php=8.4 --no-interaction
 
       - name: Prepare release files
         run: |
           mv builds/build/linux/linux-x64 builds/backup-agent-linux-x64
-          mv builds/build/linux/linux-arm64 builds/backup-agent-linux-arm64
-          chmod +x builds/backup-agent-linux-*
+          chmod +x builds/backup-agent-linux-x64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -53,7 +50,6 @@ jobs:
           path: |
             builds/backup-agent.phar
             builds/backup-agent-linux-x64
-            builds/backup-agent-linux-arm64
 
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -62,4 +58,3 @@ jobs:
           files: |
             builds/backup-agent.phar
             builds/backup-agent-linux-x64
-            builds/backup-agent-linux-arm64
