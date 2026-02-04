@@ -28,6 +28,12 @@ class InstallCommand extends Command
         $this->keyPath = config('backup.storage_path').'/keys';
         $this->configPath = config('backup.storage_path').'/config.json';
 
+        // Override panel URL if provided
+        if ($panelUrl = $this->option('panel-url')) {
+            config(['backup.panel_url' => $panelUrl]);
+            $api = new PanelApi(); // Recreate with new config
+        }
+
         info('Backup Agent Installation');
 
         // Check if already installed
@@ -65,6 +71,7 @@ class InstallCommand extends Command
 
         // Save configuration
         $this->saveConfig([
+            'panel_url' => config('backup.panel_url'),
             'server_id' => $data['server_id'],
             'fingerprint' => $data['fingerprint'],
             'status' => $data['status'],
