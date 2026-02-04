@@ -36,7 +36,9 @@ jobs:
           mv backup-agent.phar builds/
 
       - name: Build standalone binaries
-        run: ./vendor/bin/phpacker build --src=./builds/backup-agent.phar --php=8.4 linux
+        run: |
+          ./vendor/bin/phpacker build linux x64 --src=./builds/backup-agent.phar --php=8.4 --no-interaction
+          ./vendor/bin/phpacker build linux arm64 --src=./builds/backup-agent.phar --php=8.4 --no-interaction
 
       - name: Prepare release files
         run: |
