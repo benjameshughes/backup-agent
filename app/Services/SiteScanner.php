@@ -7,43 +7,78 @@ use Illuminate\Support\Facades\File;
 
 class SiteScanner
 {
-    protected string $sitesPath;
+    /** @var array<int, string> */
+    protected array $sitesPaths;
 
     public function __construct()
     {
-        $this->sitesPath = config('backup.sites_path');
+        $this->sitesPaths = $this->parsePaths(config('backup.sites_paths'));
+    }
+
+    /**
+     * Parse comma-separated paths into array.
+     *
+     * @return array<int, string>
+     */
+    protected function parsePaths(string $paths): array
+    {
+        return array_filter(
+            array_map('trim', explode(',', $paths)),
+            fn ($path) => ! empty($path)
+        );
+    }
+
+    /**
+     * Get configured paths.
+     *
+     * @return array<int, string>
+     */
+    public function getPaths(): array
+    {
+        return $this->sitesPaths;
     }
 
     /**
      * Scan for Laravel sites and return database configurations.
      *
-     * @return Collection<int, array{site: string, database: string, connection: array}>
+     * @return Collection<int, array{site: string, path: string, database: string, connection: array}>
      */
     public function scan(): Collection
     {
         $sites = collect();
+        $seenDatabases = [];
 
-        if (! File::isDirectory($this->sitesPath)) {
-            return $sites;
-        }
-
-        $directories = File::directories($this->sitesPath);
-
-        foreach ($directories as $directory) {
-            $envPath = $directory.'/.env';
-
-            if (! File::exists($envPath)) {
+        foreach ($this->sitesPaths as $basePath) {
+            if (! File::isDirectory($basePath)) {
                 continue;
             }
 
-            $database = $this->parseDatabaseConfig($envPath);
+            $directories = File::directories($basePath);
 
-            if ($database) {
-                $sites->push([
-                    'site' => basename($directory),
-                    'database' => $database['database'],
-                    'connection' => $database,
-                ]);
+            foreach ($directories as $directory) {
+                $envPath = $directory.'/.env';
+
+                if (! File::exists($envPath)) {
+                    continue;
+                }
+
+                $database = $this->parseDatabaseConfig($envPath);
+
+                if ($database) {
+                    // Skip duplicate databases (same DB might be in multiple sites)
+                    $dbKey = $database['host'].':'.$database['database'];
+                    if (isset($seenDatabases[$dbKey])) {
+                        continue;
+                    }
+                    $seenDatabases[$dbKey] = true;
+
+                    $sites->push([
+                        'site' => basename($directory),
+                        'path' => $directory,
+                        'database' => $database['database'],
+                        'connection' => $database,
+                    ]);
+                }
             }
         }
 

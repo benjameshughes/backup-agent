@@ -11,10 +11,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Forge Sites Path
+    | Sites Paths
     |--------------------------------------------------------------------------
+    | Directories to scan for Laravel sites. Supports:
+    | - Single path: /home/forge
+    | - Multiple paths (comma-separated): /home/forge,/var/www,/srv/sites
+    | - Common defaults for Forge, Ploi, RunCloud, etc.
     */
-    'sites_path' => env('BACKUP_SITES_PATH', '/home/forge'),
+    'sites_paths' => env('BACKUP_SITES_PATHS', env('BACKUP_SITES_PATH', '/home/forge')),
 
     /*
     |--------------------------------------------------------------------------
