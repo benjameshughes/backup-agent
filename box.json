@@ -15,5 +15,6 @@
         "KevinGH\\Box\\Compactor\\Php",
         "KevinGH\\Box\\Compactor\\Json"
     ],
-    "check-requirements": false
+    "check-requirements": false,
+    "output": "backup-agent.phar"
 }

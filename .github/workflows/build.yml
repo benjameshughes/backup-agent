@@ -1,4 +1,4 @@
-name: Build Phar
+name: Build
 
 on:
   push:
@@ -24,22 +24,41 @@ jobs:
           ini-values: phar.readonly=0
 
       - name: Install dependencies
-        run: composer install --no-dev --prefer-dist --no-interaction
+        run: composer install --prefer-dist --no-interaction
 
       - name: Install Box globally
         run: composer global require humbug/box
 
       - name: Build Phar
-        run: ~/.composer/vendor/bin/box compile
+        run: |
+          mkdir -p builds
+          ~/.composer/vendor/bin/box compile -o builds/backup-agent.phar
 
-      - name: Upload artifact
+      - name: Build standalone binaries
+        run: |
+          ./vendor/bin/phpacker build --src=./builds/backup-agent.phar --php=8.4 linux-x64
+          ./vendor/bin/phpacker build --src=./builds/backup-agent.phar --php=8.4 linux-arm64
+
+      - name: Prepare release files
+        run: |
+          mv builds/build/linux/linux-x64 builds/backup-agent-linux-x64
+          mv builds/build/linux/linux-arm64 builds/backup-agent-linux-arm64
+          chmod +x builds/backup-agent-linux-*
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: backup-agent
-          path: backup-agent.phar
+          name: backup-agent-binaries
+          path: |
+            builds/backup-agent.phar
+            builds/backup-agent-linux-x64
+            builds/backup-agent-linux-arm64
 
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: backup-agent.phar
+          files: |
+            builds/backup-agent.phar
+            builds/backup-agent-linux-x64
+            builds/backup-agent-linux-arm64
